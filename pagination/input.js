@@ -19,6 +19,20 @@
  */
 
 (function ($) {
+    var firstClassName = 'first btn btn-default';
+    var previousClassName = 'previous btn btn-default';
+    var nextClassName = 'next btn btn-default';
+    var lastClassName = 'last btn btn-default';
+
+    var paginateClassName = 'paginate';
+    var paginateOfClassName = 'paginate_of input-group-addon';
+    var paginatePageClassName = 'paginate_page input-group-addon';
+    var paginateInputClassName = 'paginate_input form-control';
+
+    var leftClassName = 'left input-group-btn';
+    var middleClassName = 'middle input-group';
+    var rightClassName = 'right input-group-btn';
+
 	function calcDisableClasses(oSettings) {
 		var start = oSettings._iDisplayStart;
 		var length = oSettings._iDisplayLength;
@@ -32,12 +46,14 @@
 		var disableFirstPrevClass = (page > 0 ? '' : oSettings.oClasses.sPageButtonDisabled);
 		var disableNextLastClass = (page < pages - 1 ? '' : oSettings.oClasses.sPageButtonDisabled);
 
-		return {
-			'first': disableFirstPrevClass,
-			'previous': disableFirstPrevClass,
-			'next': disableNextLastClass,
-			'last': disableNextLastClass
-		};
+		var result = {};
+
+		result[firstClassName] = disableFirstPrevClass;
+		result[previousClassName] = disableFirstPrevClass;
+		result[nextClassName] = disableNextLastClass;
+		result[lastClassName] = disableNextLastClass;
+
+		return result;
 	}
 
 	function calcCurrentPage(oSettings) {
@@ -48,33 +64,39 @@
 		return Math.ceil(oSettings.fnRecordsDisplay() / oSettings._iDisplayLength);
 	}
 
-	var firstClassName = 'first';
-	var previousClassName = 'previous';
-	var nextClassName = 'next';
-	var lastClassName = 'last';
-
-	var paginateClassName = 'paginate';
-	var paginateOfClassName = 'paginate_of';
-	var paginatePageClassName = 'paginate_page';
-	var paginateInputClassName = 'paginate_input';
-
 	$.fn.dataTableExt.oPagination.input = {
 		'fnInit': function (oSettings, nPaging, fnCallbackDraw) {
-			var nFirst = document.createElement('span');
-			var nPrevious = document.createElement('span');
-			var nNext = document.createElement('span');
-			var nLast = document.createElement('span');
+			var wrapper = document.createElement('div');
+
+			var leftGroup = document.createElement('div');
+			var middleGroup = document.createElement('div');
+			var rightGroup = document.createElement('div');
+
+			var nFirst = document.createElement('button');
+			var nPrevious = document.createElement('button');
+			var nNext = document.createElement('button');
+			var nLast = document.createElement('button');
 			var nInput = document.createElement('input');
 			var nPage = document.createElement('span');
 			var nOf = document.createElement('span');
 
+			var iconFirst = document.createElement('i');
+            var iconPrevious = document.createElement('i');
+            var iconNext = document.createElement('i');
+            var iconLast = document.createElement('i');
+
 			var language = oSettings.oLanguage.oPaginate;
 			var classes = oSettings.oClasses;
 
-			nFirst.innerHTML = language.sFirst;
-			nPrevious.innerHTML = language.sPrevious;
-			nNext.innerHTML = language.sNext;
-			nLast.innerHTML = language.sLast;
+			iconFirst.className = 'fa fa-angle-double-left';
+			iconPrevious.className = 'fa fa-angle-left';
+			iconNext.className = 'fa fa-angle-right';
+			iconLast.className = 'fa fa-angle-double-right';
+
+			nFirst.appendChild(iconFirst);
+			nPrevious.appendChild(iconPrevious);
+			nNext.appendChild(iconNext);
+			nLast.appendChild(iconLast);
 
 			nFirst.className = firstClassName + ' ' + classes.sPageButton;
 			nPrevious.className = previousClassName + ' ' + classes.sPageButton;
@@ -85,6 +107,27 @@
 			nPage.className = paginatePageClassName;
 			nInput.className = paginateInputClassName;
 
+            nInput.type = 'text';
+            nPage.innerHTML = 'Page ';
+
+			leftGroup.className = leftClassName;
+			middleGroup.className = middleClassName;
+			rightGroup.className = rightClassName;
+
+			leftGroup.appendChild(nFirst);
+			leftGroup.appendChild(nPrevious);
+			middleGroup.appendChild(nPage);
+			middleGroup.appendChild(nInput);
+			middleGroup.appendChild(nOf);
+			rightGroup.appendChild(nNext);
+			rightGroup.appendChild(nLast);
+
+			wrapper.className = 'input-group';
+
+			wrapper.appendChild(leftGroup);
+			wrapper.appendChild(middleGroup);
+			wrapper.appendChild(rightGroup);
+
 			if (oSettings.sTableId !== '') {
 				nPaging.setAttribute('id', oSettings.sTableId + '_' + paginateClassName);
 				nFirst.setAttribute('id', oSettings.sTableId + '_' + firstClassName);
@@ -93,16 +136,7 @@
 				nLast.setAttribute('id', oSettings.sTableId + '_' + lastClassName);
 			}
 
-			nInput.type = 'text';
-			nPage.innerHTML = 'Page ';
-
-			nPaging.appendChild(nFirst);
-			nPaging.appendChild(nPrevious);
-			nPaging.appendChild(nPage);
-			nPaging.appendChild(nInput);
-			nPaging.appendChild(nOf);
-			nPaging.appendChild(nNext);
-			nPaging.appendChild(nLast);
+			nPaging.appendChild(wrapper);
 
 			$(nFirst).click(function() {
 				var iCurrentPage = calcCurrentPage(oSettings);
@@ -192,33 +226,38 @@
 
 			var disableClasses = calcDisableClasses(oSettings);
 
+			var $wrapper = $(an).children('.input-group');
+			var $left = $wrapper.children('.' + leftClassName.replace(/ /g, '.'));
+			var $middle = $wrapper.children('.' + middleClassName.replace(/ /g, '.'));
+			var $right = $wrapper.children('.' + rightClassName.replace(/ /g, '.'));
+
 			$(an).show();
 
 			// Enable/Disable `first` button.
-			$(an).children('.' + firstClassName)
+			$left.children('.' + firstClassName.replace(/ /g, '.'))
 				.removeClass(oSettings.oClasses.sPageButtonDisabled)
 				.addClass(disableClasses[firstClassName]);
 
 			// Enable/Disable `prev` button.
-			$(an).children('.' + previousClassName)
+			$left.children('.' + previousClassName.replace(/ /g, '.'))
 				.removeClass(oSettings.oClasses.sPageButtonDisabled)
 				.addClass(disableClasses[previousClassName]);
 
 			// Enable/Disable `next` button.
-			$(an).children('.' + nextClassName)
+			$right.children('.' + nextClassName.replace(/ /g, '.'))
 				.removeClass(oSettings.oClasses.sPageButtonDisabled)
 				.addClass(disableClasses[nextClassName]);
 
 			// Enable/Disable `last` button.
-			$(an).children('.' + lastClassName)
+			$right.children('.' + lastClassName.replace(/ /g, '.'))
 				.removeClass(oSettings.oClasses.sPageButtonDisabled)
 				.addClass(disableClasses[lastClassName]);
 
 			// Paginate of N pages text
-			$(an).children('.' + paginateOfClassName).html(' of ' + iPages);
+			$(an).children('.' + paginateOfClassName.replace(/ /g, '.')).html(' of ' + iPages);
 
 			// Current page numer input value
-			$(an).children('.' + paginateInputClassName).val(iCurrentPage);
+			$middle.children('.' + paginateInputClassName.replace(/ /g, '.')).val(iCurrentPage);
 		}
 	};
 })(jQuery);
